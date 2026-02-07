@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Translator | English to Burmese</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at top right, #1e1b4b, transparent),
+                              radial-gradient(circle at bottom left, #1e1b4b, transparent);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem;
+            z-index: 1;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 3rem 1rem;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--glass);
+        }
+
+        .upload-area input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .upload-text {
+            font-weight: 400;
+            color: var(--text);
+        }
+
+        .file-info {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--primary);
+            display: none;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-container {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #6366f1, #c084fc);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .download-btn {
+            background: #10b981;
+            margin-top: 1rem;
+        }
+
+        .download-btn:hover {
+            background: #059669;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>TransLite AI</h1>
+            <p class="subtitle">Translate your English videos to Burmese subtitles instantly.</p>
+            
+            <div id="upload-form">
+                <div class="upload-area" id="drop-zone">
+                    <span class="upload-icon">🎬</span>
+                    <span class="upload-text">Drop your video here or <span style="color: var(--primary)">browse</span></span>
+                    <input type="file" id="video-input" accept="video/*">
+                    <div id="file-name" class="file-info"></div>
+                </div>
+                
+                <button id="process-btn" disabled>
+                    <span class="spinner" id="btn-spinner"></span>
+                    <span id="btn-text">Start Translation</span>
+                </button>
+            </div>
+
+            <div class="status-container" id="status-area">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <p class="status-text" id="status-msg">Processing your video...</p>
+                <div id="download-area" style="display: none;">
+                    <a id="download-link" style="text-decoration: none;">
+                        <button class="download-btn">Download SRT Subtitles</button>
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer">
+                Powered by Whisper & Gemini AI
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const videoInput = document.getElementById('video-input');
+        const fileName = document.getElementById('file-name');
+        const processBtn = document.getElementById('process-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const statusArea = document.getElementById('status-area');
+        const statusMsg = document.getElementById('status-msg');
+        const progressFill = document.getElementById('progress-fill');
+        const downloadArea = document.getElementById('download-area');
+        const downloadLink = document.getElementById('download-link');
+        const uploadForm = document.getElementById('upload-form');
+
+        videoInput.addEventListener('change', () => {
+            if (videoInput.files.length > 0) {
+                fileName.textContent = `Selected: ${videoInput.files[0].name}`;
+                fileName.style.display = 'block';
+                processBtn.disabled = false;
+            }
+        });
+
+        processBtn.addEventListener('click', async () => {
+            const file = videoInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // UI Update
+            processBtn.disabled = true;
+            btnSpinner.style.display = 'block';
+            btnText.textContent = 'Uploading...';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.task_id) {
+                    startPolling(data.task_id);
+                }
+            } catch (error) {
+                console.error('Upload failed:', error);
+                alert('Upload failed. Please try again.');
+                resetUI();
+            }
+        });
+
+        function resetUI() {
+            processBtn.disabled = false;
+            btnSpinner.style.display = 'none';
+            btnText.textContent = 'Start Translation';
+        }
+
+        async function startPolling(taskId) {
+            uploadForm.style.display = 'none';
+            statusArea.style.display = 'block';
+            let progress = 0;
+
+            const poll = setInterval(async () => {
+                try {
+                    const response = await fetch(`/status/${taskId}`);
+                    const data = await response.json();
+
+                    if (data.status === 'completed') {
+                        clearInterval(poll);
+                        progressFill.style.width = '100%';
+                        statusMsg.textContent = 'Translation Complete!';
+                        downloadArea.style.display = 'block';
+                        downloadLink.href = data.download_url;
+                    } else {
+                        // Fake progress for visual effect
+                        if (progress < 90) {
+                            progress += (90 - progress) * 0.1;
+                            progressFill.style.width = `${progress}%`;
+                        }
+                        statusMsg.textContent = 'Analyzing audio and translating... This may take a few minutes.';
+                    }
+                } catch (error) {
+                    console.error('Polling failed:', error);
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
