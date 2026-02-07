@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+libs/
+.env
+
+# Project specific
+ai-video-translator/backend/uploads/
+ai-video-translator/backend/static/*.srt
+ai-video-translator/backend/static/*.mp3
+.DS_Store
